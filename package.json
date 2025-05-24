@@ -1,0 +1,36 @@
+{
+    "name": "sub02_openmusicapi",
+    "version": "1.0.0",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "start": "nodemon ./src/server.js",
+        "lint": "eslint ./src",
+        "migrate": "node-pg-migrate"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/caestomarco/openmusic-api.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/caestomarco/openmusic-api/issues"
+    },
+    "homepage": "https://github.com/caestomarco/openmusic-api#readme",
+    "description": "",
+    "dependencies": {
+        "@hapi/hapi": "^21.4.0",
+        "dotenv": "^16.5.0",
+        "joi": "^17.13.3",
+        "nanoid": "^5.1.5",
+        "node-pg-migrate": "^8.0.0",
+        "pg": "^8.16.0"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.27.0",
+        "eslint": "^9.27.0",
+        "globals": "^16.1.0",
+        "nodemon": "^3.1.10"
+    }
+}
