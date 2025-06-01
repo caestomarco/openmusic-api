@@ -1,34 +1,21 @@
 export const up = (pgm) => 
 {
-    pgm.createTable('songs', {
+    pgm.createTable('playlist_songs', {
         id: {
             type: 'VARCHAR(255)',
             primaryKey: true,
         },
-        title: {
-            type: 'VARCHAR(100)',
-            notNull: true,
-        },
-        year: {
-            type: 'INTEGER',
-            notNull: true,
-        },
-        genre: {
+        playlist_id: {
             type: 'VARCHAR(255)',
             notNull: true,
+            references: 'playlists(id)',
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE',
         },
-        performer: {
+        song_id: {
             type: 'VARCHAR(255)',
             notNull: true,
-        },
-        duration: {
-            type: 'INTEGER',
-            notNull: false,
-        },
-        album_id: {
-            type: 'VARCHAR(255)',
-            notNull: false,
-            references: 'albums',
+            references: 'songs(id)',
             onDelete: 'CASCADE',
             onUpdate: 'CASCADE',
         },
@@ -41,9 +28,14 @@ export const up = (pgm) =>
             notNull: true,
         },
     });
+
+    pgm.createIndex('playlist_songs', ['playlist_id', 'song_id'], {
+        unique: true,
+    });
 };
 
 export const down = (pgm) => 
 {
-    pgm.dropTable('songs');
+    pgm.dropIndex('playlist_songs', ['playlist_id', 'song_id']);
+    pgm.dropTable('playlist_songs');
 };

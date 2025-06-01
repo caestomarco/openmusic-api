@@ -1,34 +1,18 @@
 export const up = (pgm) => 
 {
-    pgm.createTable('songs', {
+    pgm.createTable('playlists', {
         id: {
             type: 'VARCHAR(255)',
             primaryKey: true,
         },
-        title: {
-            type: 'VARCHAR(100)',
-            notNull: true,
-        },
-        year: {
-            type: 'INTEGER',
-            notNull: true,
-        },
-        genre: {
+        name: {
             type: 'VARCHAR(255)',
             notNull: true,
         },
-        performer: {
+        owner: {
             type: 'VARCHAR(255)',
             notNull: true,
-        },
-        duration: {
-            type: 'INTEGER',
-            notNull: false,
-        },
-        album_id: {
-            type: 'VARCHAR(255)',
-            notNull: false,
-            references: 'albums',
+            references: 'users(id)',
             onDelete: 'CASCADE',
             onUpdate: 'CASCADE',
         },
@@ -45,5 +29,5 @@ export const up = (pgm) =>
 
 export const down = (pgm) => 
 {
-    pgm.dropTable('songs');
+    pgm.dropTable('playlists');
 };

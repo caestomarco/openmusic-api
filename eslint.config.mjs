@@ -17,6 +17,7 @@ export default defineConfig([
             "no-underscore-dangle": "off",
             "linebreak-style": "off",
             "camelcase": "off",
+            "semi": [ "error", "always" ],
             "import/no-extraneous-dependencies": "off",
             "object-curly-spacing": [ "error", "always" ],
             "indent": [ "error", 4, { "SwitchCase": 1 } ],

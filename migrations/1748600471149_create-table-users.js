@@ -1,16 +1,21 @@
 export const up = (pgm) => 
 {
-    pgm.createTable('albums', {
+    pgm.createTable('users', {
         id: {
             type: 'VARCHAR(255)',
             primaryKey: true,
         },
-        name: {
-            type: 'VARCHAR(100)',
+        username: {
+            type: 'VARCHAR(255)',
+            notNull: true,
+            unique: true,
+        },
+        password: {
+            type: 'TEXT',
             notNull: true,
         },
-        year: {
-            type: 'INTEGER',
+        fullname: {
+            type: 'TEXT',
             notNull: true,
         },
         created_at: {
@@ -26,5 +31,5 @@ export const up = (pgm) =>
 
 export const down = (pgm) => 
 {
-    pgm.dropTable('albums');
+    pgm.dropTable('users');
 };
