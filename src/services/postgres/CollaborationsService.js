@@ -4,9 +4,10 @@ import InvariantError from '../../exceptions/InvariantError.js';
 
 class CollaborationsService 
 {
-    constructor() 
+    constructor(cacheService) 
     {
         this._pool = new Pool();
+        this._cacheService = cacheService;
     }
 
     async addCollaboration(playlistId, collaboratorId) 
@@ -27,6 +28,8 @@ class CollaborationsService
             throw new InvariantError('Kolaborasi gagal ditambahkan');
         }
 
+        await this._cacheService.delete(`playlists:${collaboratorId}`);
+
         return result.rows[0].id;
     }
 
@@ -43,6 +46,8 @@ class CollaborationsService
         {
             throw new InvariantError('Kolaborasi gagal dihapus');
         }
+
+        await this._cacheService.delete(`playlists:${userId}`);
     }
 
     async verifyCollaborator(playlistId, userId) 

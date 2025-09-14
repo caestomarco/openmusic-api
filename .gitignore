@@ -4,4 +4,6 @@ node_modules/
 openmusic-api-collection.json
 openmusic-api-environment.json
 *.jpeg
-postgre-commands/
+*.jpg
+*.txt
+psql/

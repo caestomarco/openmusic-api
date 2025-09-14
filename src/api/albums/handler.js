@@ -9,7 +9,8 @@ class AlbumsHandler
     async getAlbumByIdHandler(request, h)
     {
         const { id } = request.params;
-        const album = await this._service.getAlbumById(id);
+
+        const { album, fromCache } = await this._service.getAlbumById(id);
 
         const response = h.response({
             status: 'success',
@@ -17,6 +18,32 @@ class AlbumsHandler
                 album,
             },
         });
+
+        if (fromCache)
+        {
+            response.header('X-Data-Source', 'cache');  
+        }
+
+        return response;
+    }
+
+    async getAlbumLikesHandler(request, h)
+    {
+        const { id } = request.params;
+
+        const { likes, fromCache } = await this._service.getAlbumLikes(id);
+
+        const response = h.response({
+            status: 'success',
+            data: {
+                likes,
+            },
+        });
+
+        if (fromCache)
+        {
+            response.header('X-Data-Source', 'cache');  
+        }
 
         return response;
     }
@@ -32,6 +59,24 @@ class AlbumsHandler
             data: {
                 albumId,
             },
+        });
+
+        response.code(201);
+
+        return response;
+    }
+
+    async postAlbumLikeHandler(request, h)
+    {
+        const { id: albumId } = request.params;
+        const { id: userId } = request.auth.credentials;
+
+        await this._service.getAlbumById(albumId);
+        await this._service.addAlbumLike(albumId, userId);
+
+        const response = h.response({
+            status: 'success',
+            message: 'Like album berhasil ditambahkan',
         });
 
         response.code(201);
@@ -64,6 +109,22 @@ class AlbumsHandler
         const response = h.response({
             status: 'success',
             message: 'Album berhasil dihapus',
+        });
+
+        return response;
+    }
+
+    async deleteAlbumLikeHandler(request, h)
+    {
+        const { id: albumId } = request.params;
+        const { id: userId } = request.auth.credentials;
+
+        await this._service.getAlbumById(albumId);
+        await this._service.deleteAlbumLike(albumId, userId);
+
+        const response = h.response({
+            status: 'success',
+            message: 'Like album berhasil dihapus',
         });
 
         return response;

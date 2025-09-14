@@ -21,13 +21,16 @@
     "description": "",
     "dependencies": {
         "@hapi/hapi": "^21.4.0",
+        "@hapi/inert": "^7.1.0",
         "@hapi/jwt": "^3.2.0",
+        "amqplib": "^0.10.8",
         "bcrypt": "^6.0.0",
         "dotenv": "^16.5.0",
         "joi": "^17.13.3",
         "nanoid": "^5.1.5",
         "node-pg-migrate": "^8.0.0",
-        "pg": "^8.16.0"
+        "pg": "^8.16.0",
+        "redis": "^5.1.1"
     },
     "devDependencies": {
         "@eslint/js": "^9.27.0",

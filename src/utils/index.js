@@ -1,7 +1,9 @@
-const mapAlbumRecordToModel = ({ id, name, year, created_at, updated_at }) => ({
+const mapAlbumRecordToModel = ({ id, name, year, cover_url, songs, created_at, updated_at }) => ({
     id,
     name,
     year,
+    coverUrl: cover_url,
+    songs,
     createdAt: created_at,
     updatedAt: updated_at,
 });
@@ -24,13 +26,4 @@ const mapPlaylistRecordToModel = ({ id, name, username }) => ({
     username,
 });
 
-const mapPlaylistSongActivityRecordToModel = ({ id, playlist_id, song_id, user_id, action, time }) => ({
-    id,
-    playlistId: playlist_id,
-    songId: song_id,
-    userId: user_id,
-    action,
-    time,
-});
-
-export { mapAlbumRecordToModel, mapSongRecordToModel, mapPlaylistRecordToModel, mapPlaylistSongActivityRecordToModel };
+export { mapAlbumRecordToModel, mapSongRecordToModel, mapPlaylistRecordToModel };

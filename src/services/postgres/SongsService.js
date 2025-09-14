@@ -6,16 +6,28 @@ import NotFoundError from '../../exceptions/NotFoundError.js';
 
 class SongsService 
 {
-    constructor() 
+    constructor(cacheService) 
     {
         this._pool = new Pool();
+        this._cacheService = cacheService;
     }
 
     async getSongs() 
     {
-        const result = await this._pool.query('SELECT id, title, performer FROM songs');
+        try
+        {
+            const songs = await this._cacheService.get('songs');
 
-        return result.rows.map(mapSongRecordToModel);
+            return { songs: JSON.parse(songs), fromCache: true };
+        }
+        catch
+        {
+            const result = await this._pool.query('SELECT id, title, performer FROM songs');
+
+            const songs = result.rows.map(mapSongRecordToModel);
+
+            return { songs, fromCache: false };
+        }
     }
 
     async getSongsByTitleOrPerformer(title, performer) 
@@ -47,19 +59,32 @@ class SongsService
 
     async getSongById(id) 
     {
-        const query = {
-            text: 'SELECT * FROM songs WHERE id = $1',
-            values: [id],
-        };
-
-        const result = await this._pool.query(query);
-
-        if (!result.rows.length) 
+        try
         {
-            throw new NotFoundError('Lagu tidak ditemukan');
-        }
+            const song = await this._cacheService.get(`song:${id}`);
 
-        return result.rows.map(mapSongRecordToModel)[0];
+            return { song: JSON.parse(song), fromCache: true };
+        }
+        catch 
+        {
+            const query = {
+                text: 'SELECT * FROM songs WHERE id = $1',
+                values: [id],
+            };
+
+            const result = await this._pool.query(query);
+
+            if (!result.rows.length) 
+            {
+                throw new NotFoundError('Lagu tidak ditemukan');
+            }
+
+            const song = result.rows.map(mapSongRecordToModel)[0];
+
+            await this._cacheService.set(`song:${id}`, song);
+
+            return { song, fromCache: false };
+        }
     }
 
     async addSong({ title, year, genre, performer, duration, albumId }) 
@@ -67,7 +92,7 @@ class SongsService
         const id = `song-${nanoid(16)}`;
         const createdAt = new Date().toISOString();
         const updatedAt = createdAt;
-        
+
         const query = {
             text: 'INSERT INTO songs VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
             values: [id, title, year, genre, performer, duration, albumId, createdAt, updatedAt],
@@ -79,6 +104,8 @@ class SongsService
         {
             throw new InvariantError('Lagu gagal ditambahkan');
         }
+
+        await this._cacheService.delete('songs');
 
         return result.rows[0].id;
     }
@@ -97,6 +124,8 @@ class SongsService
         {
             throw new NotFoundError('Gagal memperbarui lagu. Id tidak ditemukan');
         }
+
+        await this._cacheService.delete(`song:${id}`);
     }
 
     async deleteSongById(id) 
@@ -112,6 +141,8 @@ class SongsService
         {
             throw new NotFoundError('Lagu gagal dihapus. Id tidak ditemukan');
         }
+
+        await this._cacheService.delete(`song:${id}`);
     }
 
     // ADDITIONAL TO CLEAR DATABASE DURING TESTING

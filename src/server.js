@@ -1,7 +1,11 @@
 import 'dotenv/config';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
 import Hapi from '@hapi/hapi';
 import Jwt from '@hapi/jwt';
+import Inert from '@hapi/inert';
 
 // ERROR HANDLING
 import ClientError from './exceptions/ClientError.js';
@@ -37,14 +41,33 @@ import collaborations from './api/collaborations/index.js';
 import CollaborationsService from './services/postgres/CollaborationsService.js';
 import CollaborationsValidator from './validator/collaborations/index.js';
 
+// EXPORTS
+import _exports from './api/exports/index.js';
+import ProducerService from './services/rabbitmq/ProducerService.js';
+import ExportsValidator from './validator/exports/index.js';
+
+// UPLOADS
+import uploads from './api/uploads/index.js';
+import StorageService from './services/storage/StorageService.js';
+import UploadsValidator from './validator/uploads/index.js';
+
+// CACHE
+import CacheService from './services/redis/CacheService.js';
+
 const init = async () =>
 {
-    const collaborationsService = new CollaborationsService();
-    const albumsService = new AlbumsService();
-    const songsService = new SongsService();
+    const cacheService = new CacheService();
+    const collaborationsService = new CollaborationsService(cacheService);
+    const albumsService = new AlbumsService(cacheService);
+    const songsService = new SongsService(cacheService);
     const usersService = new UsersService();
-    const playlistsService = new PlaylistsService(collaborationsService);
+    const playlistsService = new PlaylistsService(collaborationsService, cacheService);
     const authenticationsService = new AuthenticationsService();
+
+    // SINCE ES6Modules DO NOT HAVE __dirname AND __filename, I USE THIS WORKAROUND
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+    const storageService = new StorageService(path.resolve(__dirname, 'api/uploads/file/images'), cacheService);
 
     const server = Hapi.server({
         port: process.env.PORT,
@@ -60,6 +83,9 @@ const init = async () =>
         {
             plugin: Jwt,
         },
+        {
+            plugin: Inert
+        }
     ]);
 
     server.auth.strategy('openmusic_jwt', 'jwt', {
@@ -124,8 +150,24 @@ const init = async () =>
                 authenticationsService,
                 tokenManager: TokenManager,
                 validator: AuthenticationsValidator,
+            }, 
+        },
+        {
+            plugin: _exports,
+            options: {
+                playlistsService,
+                exportsService: ProducerService, 
+                validator: ExportsValidator,
             },
         },
+        {
+            plugin: uploads,
+            options: {
+                storageService,
+                albumsService,
+                validator: UploadsValidator,
+            },
+        }
     ]);
 
     server.ext('onPreResponse', (request, h) => 
@@ -134,14 +176,15 @@ const init = async () =>
 
         if (response instanceof Error) 
         {
-            console.error(response);
             if (response instanceof ClientError) 
             {
                 const newResponse = h.response({
                     status: 'fail',
                     message: response.message,
                 });
+
                 newResponse.code(response.statusCode);
+
                 return newResponse;
             }
 

@@ -11,7 +11,7 @@ class PlaylistsHandler
     {
         const { id: credentialId } = request.auth.credentials;
 
-        const playlists = await this._playlistsService.getPlaylists(credentialId);
+        const { playlists, fromCache } = await this._playlistsService.getPlaylists(credentialId);
 
         const response = h.response({
             status: 'success',
@@ -19,6 +19,11 @@ class PlaylistsHandler
                 playlists,
             },
         });
+
+        if (fromCache) 
+        {
+            response.header('X-Data-Source', 'cache');  
+        }
 
         return response;
     }
@@ -29,14 +34,19 @@ class PlaylistsHandler
         const { id: credentialId } = request.auth.credentials;
 
         await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
-        const playlistSongData = await this._playlistsService.getPlaylistSongs(playlistId);
+        const { playlistSongs, fromCache } = await this._playlistsService.getPlaylistSongs(playlistId);
 
         const response = h.response({
             status: 'success',
             data: {
-                playlist: playlistSongData,
+                playlist: playlistSongs,
             },
         });
+
+        if (fromCache)
+        {
+            response.header('X-Data-Source', 'cache');  
+        }
 
         return response;
     }
@@ -47,14 +57,19 @@ class PlaylistsHandler
         const { id: credentialId } = request.auth.credentials;
 
         await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
-        const activities = await this._playlistsService.getPlaylistSongActivities(playlistId);
+        const { playlistSongActivities, fromCache } = await this._playlistsService.getPlaylistSongActivities(playlistId);
 
         const response = h.response({
             status: 'success',
             data: {
-                ...activities,
+                ...playlistSongActivities,
             },
         });
+
+        if (fromCache)
+        {
+            response.header('X-Data-Source', 'cache');  
+        }
 
         return response;
     }
